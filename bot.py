@@ -83,7 +83,7 @@ async def play_music(message):
     # Send "Added to queue" message immediately
     await message.channel.send(f'Added to queue: {get_video_title(video_id)}')
 
-    ydl_opts = { 
+    ydl_opts = {
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
