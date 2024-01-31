@@ -76,6 +76,11 @@ async def play_music(message):
     if 'youtu.be' in query:
         video_id = query.split('/')[-1].split('?')[0]
     else:
+        # Check if the provided link is from YouTube
+        if not is_youtube_link(query):
+            await message.channel.send("Invalid link. Only YouTube links are allowed.")
+            return
+
         # Search for the song
         video_id = search_youtube(query)
 
@@ -126,6 +131,9 @@ def search_youtube(query):
             return result['entries'][0]['id']
     except youtube_dl.DownloadError:
         return None
+    
+def is_youtube_link(link):
+    return 'youtube.com' in link or 'youtu.be' in link
     
 async def display_queue(message):
     if not queue:
