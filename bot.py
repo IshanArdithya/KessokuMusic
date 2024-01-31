@@ -72,8 +72,13 @@ async def play_music(message):
     else:
         return
 
-    # Search for the song
-    video_id = search_youtube(query)
+    # Extract video ID from short link if present
+    if 'youtu.be' in query:
+        video_id = query.split('/')[-1].split('?')[0]
+    else:
+        # Search for the song
+        video_id = search_youtube(query)
+
     if not video_id:
         await message.channel.send("No results found for the given query.")
         return
@@ -167,7 +172,7 @@ async def stop_music(message):
     voice_channel = discord.utils.get(bot.voice_clients, guild=message.guild)
     
     if voice_channel.is_playing():
-        voice_channel.pause()
+        voice_channel.stop()
         await message.channel.send("Music stopped.")
 
     await voice_channel.disconnect()
