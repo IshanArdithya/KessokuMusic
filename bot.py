@@ -5,11 +5,10 @@ import yt_dlp as youtube_dl
 import asyncio
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from config import BOT_TOKEN, YOUTUBE_API_KEY
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='+', intents=intents)
-
-YOUTUBE_API_KEY = 'AIzaSyDfEis1F2ZFGsOssyzTXXbSY6q5dhk_ydw'
+bot = commands.Bot(command_prefix='-', intents=intents)
 
 
 queue = []
@@ -23,7 +22,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.content.lower().startswith('+play ') or message.content.lower().startswith('+p '):
+    if message.content.lower().startswith('f'{command_prefix}play ') or message.content.lower().startswith('+p '):
         await play_music(message)
 
     elif message.content.lower() == '+stop':
@@ -215,4 +214,4 @@ async def shuffle_queue(message):
 
     await message.channel.send("Queue shuffled.")
 
-bot.run('MTIwMTQ4MzIxNDcyOTAwNzE0NA.GrBIA0.2to-Dy7iSR7OoRBHm0yuUfcF1pOlnccl3EY61A')
+bot.run(BOT_TOKEN)
