@@ -1,4 +1,5 @@
 import discord
+import random
 from discord.ext import commands
 import yt_dlp as youtube_dl
 import asyncio
@@ -22,7 +23,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.content.lower().startswith('+play') or message.content.lower().startswith('+p'):
+    if message.content.lower().startswith('+play ') or message.content.lower().startswith('+p '):
         await play_music(message)
 
     elif message.content.lower() == '+stop':
@@ -42,6 +43,9 @@ async def on_message(message):
 
     elif message.content.lower() == '+resume':
         await resume_song(message)
+
+    elif message.content.lower() == '+shuffle':
+        await shuffle_queue(message)
 
     await bot.process_commands(message)
 
@@ -65,9 +69,9 @@ async def play_music(message):
         # If the bot is not in any voice channel, connect to the requested channel
         voice_channel = await channel.connect()
 
-    if message.content.lower().startswith('+play'):
+    if message.content.lower().startswith('+play '):
         query = message.content[len('+play '):].strip()
-    elif message.content.lower().startswith('+p'):
+    elif message.content.lower().startswith('+p '):
         query = message.content[len('+p '):].strip()
     else:
         return
@@ -76,11 +80,6 @@ async def play_music(message):
     if 'youtu.be' in query:
         video_id = query.split('/')[-1].split('?')[0]
     else:
-        # Check if the provided link is from YouTube
-        if not is_youtube_link(query):
-            await message.channel.send("Invalid link. Only YouTube links are allowed.")
-            return
-
         # Search for the song
         video_id = search_youtube(query)
 
@@ -131,9 +130,6 @@ def search_youtube(query):
             return result['entries'][0]['id']
     except youtube_dl.DownloadError:
         return None
-    
-def is_youtube_link(link):
-    return 'youtube.com' in link or 'youtu.be' in link
     
 async def display_queue(message):
     if not queue:
@@ -211,5 +207,16 @@ def get_video_title(video_id):
     except HttpError as e:
         print(f'An error occurred: {e}')
         return 'Unknown Title'
+    
+async def shuffle_queue(message):
+    global queue
+    if len(queue) < 2:
+        await message.channel.send("There are not enough songs in the queue to shuffle.")
+        return
+
+    # Shuffle the queue
+    random.shuffle(queue)
+
+    await message.channel.send("Queue shuffled.")
 
 bot.run('MTIwMTQ4MzIxNDcyOTAwNzE0NA.GrBIA0.2to-Dy7iSR7OoRBHm0yuUfcF1pOlnccl3EY61A')
