@@ -13,6 +13,8 @@ bot = commands.Bot(command_prefix='-', intents=intents)
 
 queue = []
 
+command_prefix = bot.command_prefix
+
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user.name}')
@@ -22,28 +24,28 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.content.lower().startswith('f'{command_prefix}play ') or message.content.lower().startswith('+p '):
+    if message.content.lower().startswith(f'{command_prefix}play ') or message.content.lower().startswith(f'{command_prefix}p ')
         await play_music(message)
 
-    elif message.content.lower() == '+stop':
+    elif message.content.lower() == f'{command_prefix}stop':
         await stop_music(message)
 
-    elif message.content.lower() == '+queuelist' or message.content.lower() == '+qlist':
+    elif message.content.lower() == f'{command_prefix}queuelist' or message.content.lower() == f'{command_prefix}qlist':
         await display_queue(message)
 
-    elif message.content.lower() == '+clearqueue' or message.content.lower() == '+clearq':
+    elif message.content.lower() == f'{command_prefix}clearqueue' or message.content.lower() == f'{command_prefix}clearq':
         await clear_queue(message)
 
-    elif message.content.lower() == '+skip':
+    elif message.content.lower() == f'{command_prefix}skip':
         await skip_song(message)
 
-    elif message.content.lower() == '+pause':
+    elif message.content.lower() == f'{command_prefix}pause':
         await pause_song(message)
 
-    elif message.content.lower() == '+resume':
+    elif message.content.lower() == f'{command_prefix}resume':
         await resume_song(message)
 
-    elif message.content.lower() == '+shuffle':
+    elif message.content.lower() == f'{command_prefix}shuffle':
         await shuffle_queue(message)
 
     await bot.process_commands(message)
@@ -68,10 +70,10 @@ async def play_music(message):
         # If the bot is not in any voice channel, connect to the requested channel
         voice_channel = await channel.connect()
 
-    if message.content.lower().startswith('+play '):
-        query = message.content[len('+play '):].strip()
-    elif message.content.lower().startswith('+p '):
-        query = message.content[len('+p '):].strip()
+    if message.content.lower().startswith(f'{command_prefix}play '):
+        query = message.content[len(f'{command_prefix}play '):].strip()
+    elif message.content.lower().startswith(f'{command_prefix}p '):
+        query = message.content[len(f'{command_prefix}p '):].strip()
     else:
         return
 
