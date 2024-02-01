@@ -24,7 +24,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if message.content.lower().startswith(f'{command_prefix}play ') or message.content.lower().startswith(f'{command_prefix}p ')
+    if message.content.lower().startswith(f'{command_prefix}play ') or message.content.lower().startswith(f'{command_prefix}p '):
         await play_music(message)
 
     elif message.content.lower() == f'{command_prefix}stop':
