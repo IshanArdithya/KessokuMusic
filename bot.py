@@ -121,7 +121,6 @@ async def play_music(message):
     if not voice_channel.is_playing():
         await play_next_in_queue(voice_channel)
 
-
 def search_youtube(query):
     ydl = youtube_dl.YoutubeDL({'format': 'best'})
     try:
@@ -178,10 +177,9 @@ async def stop_music(message):
     if voice_channel.is_playing():
         voice_channel.stop()
         await message.channel.send("Music stopped.")
-
+    queue.clear()
     await voice_channel.disconnect()
     
-
 async def play_next_in_queue(voice_channel):
     # Check if there are songs in the queue
     if queue:
@@ -193,8 +191,6 @@ async def play_next_in_queue(voice_channel):
             voice_channel.play(discord.FFmpegPCMAudio(next_song['url'], before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", options="-vn"), after=lambda e: asyncio.run_coroutine_threadsafe(play_next_in_queue(voice_channel), bot.loop))
 
             await voice_channel.guild.get_channel(voice_channel.channel.id).send(f'Now playing: {next_song["title"]}')
-
-
 
 def get_video_title(video_id):
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
