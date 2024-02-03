@@ -176,7 +176,7 @@ async def shuffle_queue(message):
     if len(queue) < 2:
         await message.channel.send("There are not enough songs in the queue to shuffle.")
         return
- 
+
     random.shuffle(queue)
 
     await message.channel.send("Queue shuffled.")
