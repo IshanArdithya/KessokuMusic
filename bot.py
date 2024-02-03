@@ -5,7 +5,7 @@ import yt_dlp as youtube_dl
 import asyncio
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX
+from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, EMBEDCOLOR
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
@@ -52,7 +52,11 @@ async def play_music(ctx, *, query):
 
     url = f'https://www.youtube.com/watch?v={video_id}'
 
-    await ctx.send(f'Added to queue: {get_video_title(video_id)}')
+    await ctx.send(embed=discord.Embed(
+        title="",
+        description=f"Added to queue: **{get_video_title(video_id)}**",
+        color=EMBEDCOLOR  # You can set the color based on your preference
+    ))
 
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -98,7 +102,7 @@ async def display_queue(ctx):
 
     embed = discord.Embed(
         title="Queue List",
-        color=0xF8AA2A  # You can set the color based on your preference
+        color=EMBEDCOLOR  # You can set the color based on your preference
     )
 
     for index, song in enumerate(queue):
@@ -149,9 +153,14 @@ async def stop_music(message):
     
     if voice_channel.is_playing():
         voice_channel.stop()
-        await message.channel.send("Music stopped.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"Player has been stopped.",
+        color=EMBEDCOLOR  # You can set the color based on your preference
+        ))
     queue.clear()
     await voice_channel.disconnect()
+    
     
 async def play_next_in_queue(voice_channel):
     
@@ -185,6 +194,10 @@ async def shuffle_queue(message):
 
     random.shuffle(queue)
 
-    await message.channel.send("Queue shuffled.")
+    await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"Queue Shuffled.",
+        color=EMBEDCOLOR  # You can set the color based on your preference
+        ))
 
 bot.run(BOT_TOKEN)
