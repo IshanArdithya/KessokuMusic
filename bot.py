@@ -55,7 +55,7 @@ async def play_music(ctx, *, query):
     await ctx.send(embed=discord.Embed(
         title="",
         description=f"Added to queue: **{get_video_title(video_id)}**",
-        color=EMBEDCOLOR  # You can set the color based on your preference
+        color=EMBEDCOLOR
     ))
 
     ydl_opts = {
@@ -102,7 +102,7 @@ async def display_queue(ctx):
 
     embed = discord.Embed(
         title="Queue List",
-        color=EMBEDCOLOR  # You can set the color based on your preference
+        color=EMBEDCOLOR
     )
 
     for index, song in enumerate(queue):
@@ -156,7 +156,7 @@ async def stop_music(message):
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Player has been stopped.",
-        color=EMBEDCOLOR  # You can set the color based on your preference
+        color=EMBEDCOLOR
         ))
     queue.clear()
     await voice_channel.disconnect()
@@ -197,7 +197,7 @@ async def shuffle_queue(message):
     await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Queue Shuffled.",
-        color=EMBEDCOLOR  # You can set the color based on your preference
+        color=EMBEDCOLOR
         ))
 
 bot.run(BOT_TOKEN)
