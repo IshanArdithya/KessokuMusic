@@ -91,13 +91,20 @@ def search_youtube(query):
         return None
     
 @bot.command(name='queuelist', aliases=['qlist'])
-async def display_queue(message):
+async def display_queue(ctx):
     if not queue:
-        await message.channel.send("The queue is empty.")
+        await ctx.send("The queue is empty.")
         return
 
-    queue_list = '\n'.join([f'{index + 1}. {song["title"]}' for index, song in enumerate(queue)])
-    await message.channel.send(f'Queue:\n{queue_list}')
+    embed = discord.Embed(
+        title="Queue List",
+        color=0xF8AA2A  # You can set the color based on your preference
+    )
+
+    for index, song in enumerate(queue):
+        embed.add_field(name=f"{index + 1}. {song['title']}", value=" ", inline=False)
+
+    await ctx.send(embed=embed)
 
 @bot.command(name='clearqueue', aliases=['clearq'])
 async def clear_queue(message):
