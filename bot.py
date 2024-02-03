@@ -10,7 +10,6 @@ from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
 
-
 queue = []
 
 command_prefix = bot.command_prefix
