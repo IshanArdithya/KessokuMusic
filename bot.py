@@ -1,11 +1,12 @@
 import discord
 import random
 from discord.ext import commands
+from discord import Activity, ActivityType
 import yt_dlp as youtube_dl
 import asyncio
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, EMBEDCOLOR
+from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, EMBEDCOLOR, BOT_ACTIVITY_TYPE, BOT_ACTIVITY_NAME
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
@@ -16,6 +17,7 @@ command_prefix = bot.command_prefix
 
 @bot.event
 async def on_ready():
+    await bot.change_presence(activity=Activity(type=ActivityType.watching, name=BOT_ACTIVITY_NAME))
     print(f'We have logged in as {bot.user.name}')
 
 @bot.command(name='play', aliases=['p'])
