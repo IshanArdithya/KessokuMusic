@@ -115,37 +115,69 @@ async def clear_queue(message):
     global queue
     if queue:
         queue.clear()
-        await message.channel.send("Queue cleared.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"Queue cleared.",
+        color=EMBEDCOLOR
+        ))
     else:
-        await message.channel.send("The queue is already empty.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"The queue is already empty.",
+        color=EMBEDCOLOR
+        ))
 
 @bot.command(name='skip') 
 async def skip_song(message):
     voice_channel = discord.utils.get(bot.voice_clients, guild=message.guild)
     if voice_channel.is_playing():
         voice_channel.stop()
-        await message.channel.send("Skipped the currently playing song.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"Skipped the currently playing song.",
+        color=EMBEDCOLOR
+        ))
         await play_next_in_queue(voice_channel)
     else:
-        await message.channel.send("There is no song currently playing.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"There is no song currently playing.",
+        color=EMBEDCOLOR
+        ))
 
 @bot.command(name='pause') 
 async def pause_song(message):
     voice_channel = discord.utils.get(bot.voice_clients, guild=message.guild)
     if voice_channel.is_playing():
         voice_channel.pause()
-        await message.channel.send("Paused the currently playing song.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"Paused the currently playing song.",
+        color=EMBEDCOLOR
+        ))
     else:
-        await message.channel.send("There is no song currently playing.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"There is no song currently playing.",
+        color=EMBEDCOLOR
+        ))
 
 @bot.command(name='resume') 
 async def resume_song(message):
     voice_channel = discord.utils.get(bot.voice_clients, guild=message.guild)
     if voice_channel.is_paused():
         voice_channel.resume()
-        await message.channel.send("Resumed the currently paused song.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"Resumed the currently paused song.",
+        color=EMBEDCOLOR
+        ))
     else:
-        await message.channel.send("The song is not paused.")
+        await message.channel.send(embed=discord.Embed(
+        title="",
+        description=f"The song is not paused.",
+        color=EMBEDCOLOR
+        ))
 
 @bot.command(name='stop')
 async def stop_music(message):
