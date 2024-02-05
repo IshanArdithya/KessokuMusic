@@ -42,31 +42,40 @@ async def play_music(ctx, *, query):
     try:
         channel = ctx.author.voice.channel
     except AttributeError:
-        await ctx.send("You need to be in a voice channel to use this command.")
+        await ctx.send(embed=discord.Embed(
+        title="",
+        description=f"You need to be in a voice channel to use this command.",
+        color=discord.Colour(int(EMBEDCOLOR, 16))
+        ))
         return
 
     # Check if the bot is already in a vc in the same server
     voice_channel = discord.utils.get(bot.voice_clients, guild=ctx.guild)
 
-    # If the bot is already in a vc, use that channel (might change this in the future)
+    # If the bot is already in a vc, disconnect and join ur channel (will change this in the future)
     if voice_channel:
         if voice_channel.channel != channel:
-            await ctx.send("Bot is in another voice channel. Disconnecting and connecting to your channel.")
-            await voice_channel.disconnect()
-            voice_channel = await channel.connect()
+            await ctx.send(embed=discord.Embed(
+            title="",
+            description=f"Bot is already in another voice channel.",
+            color=discord.Colour(int(EMBEDCOLOR, 16))
+            ))
+            return
     else:
         # If the bot is not in any vc, connect to the requested vc
         voice_channel = await channel.connect()
 
-    # Extract video ID
     if 'youtu.be' in query:
         video_id = query.split('/')[-1].split('?')[0]
     else:
-        # Search for the song
         video_id = search_youtube(query)
 
     if not video_id:
-        await ctx.send("No results found for the given query.")
+        await ctx.send(embed=discord.Embed(
+        title="",
+        description=f"No results found for the given query.",
+        color=discord.Colour(int(EMBEDCOLOR, 16))
+        ))
         return
 
     url = f'https://www.youtube.com/watch?v={video_id}'
@@ -74,7 +83,7 @@ async def play_music(ctx, *, query):
     await ctx.send(embed=discord.Embed(
         title="",
         description=f"Added to queue: **{get_video_title(video_id)}**",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
     ))
 
     ydl_opts = {
@@ -86,7 +95,6 @@ async def play_music(ctx, *, query):
         }],
     }
 
-    # Download the song details in the background
     async def download_song():
         nonlocal url
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -95,7 +103,6 @@ async def play_music(ctx, *, query):
 
     await asyncio.gather(download_song())
 
-    # Add the song to the queue
     queue.append({
         'url': url,
         'title': get_video_title(video_id)
@@ -116,12 +123,16 @@ def search_youtube(query):
 @bot.command(name='queuelist', aliases=['qlist'])
 async def display_queue(ctx):
     if not queue:
-        await ctx.send("The queue is empty.")
+        await ctx.send(embed=discord.Embed(
+        title="",
+        description=f"The queue is empty.",
+        color=discord.Colour(int(EMBEDCOLOR, 16))
+        ))
         return
 
     embed = discord.Embed(
         title="Queue List",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
     )
 
     for index, song in enumerate(queue):
@@ -137,13 +148,13 @@ async def clear_queue(message):
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Queue cleared.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
     else:
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"The queue is already empty.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
 
 @bot.command(name='skip') 
@@ -154,14 +165,14 @@ async def skip_song(message):
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Skipped the currently playing song.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
         await play_next_in_queue(voice_channel)
     else:
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"There is no song currently playing.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
 
 @bot.command(name='pause') 
@@ -172,13 +183,13 @@ async def pause_song(message):
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Paused the currently playing song.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
     else:
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"There is no song currently playing.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
 
 @bot.command(name='resume') 
@@ -189,13 +200,13 @@ async def resume_song(message):
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Resumed the currently paused song.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
     else:
         await message.channel.send(embed=discord.Embed(
         title="",
         description=f"The song is not paused.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
 
 @bot.command(name='stop')
@@ -204,11 +215,11 @@ async def stop_music(message):
     
     if voice_channel.is_playing():
         voice_channel.stop()
-        await message.channel.send(embed=discord.Embed(
-        title="",
-        description=f"Player has been stopped.",
-        color=EMBEDCOLOR
-        ))
+    await message.channel.send(embed=discord.Embed(
+    title="",
+    description=f"Player has been stopped.",
+    color=discord.Colour(int(EMBEDCOLOR, 16))
+    ))
     queue.clear()
     await voice_channel.disconnect()
     
@@ -248,7 +259,7 @@ async def shuffle_queue(message):
     await message.channel.send(embed=discord.Embed(
         title="",
         description=f"Queue Shuffled.",
-        color=EMBEDCOLOR
+        color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
 
 bot.run(BOT_TOKEN)
