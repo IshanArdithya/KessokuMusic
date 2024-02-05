@@ -17,8 +17,25 @@ command_prefix = bot.command_prefix
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity=Activity(type=ActivityType.watching, name=BOT_ACTIVITY_NAME))
-    print(f'We have logged in as {bot.user.name}')
+    activity_type_mapping = {
+        '0': None,
+        '1': ActivityType.playing,
+        '2': ActivityType.listening,
+        '3': ActivityType.watching,
+        '4': ActivityType.streaming,
+        '5': ActivityType.competing
+    }
+
+    if BOT_ACTIVITY_TYPE in activity_type_mapping:
+        activity_type = activity_type_mapping[BOT_ACTIVITY_TYPE]
+    else:
+        activity_type = None
+    
+    if activity_type is not None:
+        await bot.change_presence(activity=Activity(type=activity_type, name=BOT_ACTIVITY_NAME))
+        print(f'We have logged in as {bot.user.name} with activity presence')
+    else:
+        print(f'We have logged in as {bot.user.name}')
 
 @bot.command(name='play', aliases=['p'])
 async def play_music(ctx, *, query):
