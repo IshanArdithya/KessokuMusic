@@ -261,4 +261,5 @@ async def shuffle_queue(message):
         description=f"Queue Shuffled.",
         color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
+
 bot.run(BOT_TOKEN)
