@@ -262,4 +262,19 @@ async def shuffle_queue(message):
         color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
 
+@bot.command(name='help')
+async def help(message):
+    embed = discord.Embed(
+        title="Commands",
+        color=discord.Colour(int(EMBEDCOLOR, 16))
+    )
+    embed.add_field(name=f"{command_prefix}play [query]", value="Play a song from YouTube.", inline=False)
+    embed.add_field(name=f"{command_prefix}queuelist", value="Display the current queue.", inline=False)
+    embed.add_field(name=f"{command_prefix}clearqueue", value="Clear the current queue.", inline=False)
+    embed.add_field(name=f"{command_prefix}skip", value="Skip the currently playing song.", inline=False)
+    embed.add_field(name=f"{command_prefix}pause", value="Pause the currently playing song.", inline=False)
+    embed.add_field(name=f"{command_prefix}resume", value="Resume the currently paused song.", inline=False)
+    embed.add_field(name=f"{command_prefix}stop", value="Stop the player and clear the queue.", inline=False)
+    embed.add_field(name=f"{command_prefix}shuffle", value="Shuffle the current queue.", inline=False)
+    await message.channel.send(embed=embed)
 bot.run(BOT_TOKEN)
