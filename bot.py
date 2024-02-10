@@ -14,6 +14,8 @@ bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
 queue = []
 
 command_prefix = bot.command_prefix
+bot.remove_command('help')
+
 
 @bot.event
 async def on_ready():
