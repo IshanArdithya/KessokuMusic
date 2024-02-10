@@ -265,18 +265,38 @@ async def shuffle_queue(message):
         ))
 
 @bot.command(name='help')
-async def help(message):
-    embed = discord.Embed(
-        title="Commands",
-        color=discord.Colour(int(EMBEDCOLOR, 16))
-    )
-    embed.add_field(name=f"{command_prefix}play [query]", value="Play a song from YouTube.", inline=False)
-    embed.add_field(name=f"{command_prefix}queuelist", value="Display the current queue.", inline=False)
-    embed.add_field(name=f"{command_prefix}clearqueue", value="Clear the current queue.", inline=False)
-    embed.add_field(name=f"{command_prefix}skip", value="Skip the currently playing song.", inline=False)
-    embed.add_field(name=f"{command_prefix}pause", value="Pause the currently playing song.", inline=False)
-    embed.add_field(name=f"{command_prefix}resume", value="Resume the currently paused song.", inline=False)
-    embed.add_field(name=f"{command_prefix}stop", value="Stop the player and clear the queue.", inline=False)
-    embed.add_field(name=f"{command_prefix}shuffle", value="Shuffle the current queue.", inline=False)
-    await message.channel.send(embed=embed)
+async def help(ctx):
+    view = HelpView()
+    await ctx.send("Here are the commands:", view=view)
+
+class HelpView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+
+        self.add_item(CategorySelect())
+
+class CategorySelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(label="Music", value="music", description="Music commands"),
+        ]
+        super().__init__(placeholder="Select a category", options=options)
+
+    async def callback(self, interaction: discord.Interaction):
+        selected_category = self.values[0]
+        if selected_category == "music":
+            embed = discord.Embed(
+                title="Music Commands",
+                color=discord.Colour(int(EMBEDCOLOR, 16))
+            )
+            embed.add_field(name="!play [query]", value="Play a song from YouTube.", inline=False)
+            embed.add_field(name="!queuelist", value="Display the current queue.", inline=False)
+            embed.add_field(name="!clearqueue", value="Clear the current queue.", inline=False)
+            embed.add_field(name="!skip", value="Skip the currently playing song.", inline=False)
+            embed.add_field(name="!pause", value="Pause the currently playing song.", inline=False)
+            embed.add_field(name="!resume", value="Resume the currently paused song.", inline=False)
+            embed.add_field(name="!stop", value="Stop the player and clear the queue.", inline=False)
+            embed.add_field(name="!shuffle", value="Shuffle the current queue.", inline=False)
+            await interaction.response.send_message(embed=embed)
+
 bot.run(BOT_TOKEN)
