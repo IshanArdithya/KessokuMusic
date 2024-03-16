@@ -6,7 +6,7 @@ import yt_dlp as youtube_dl
 import asyncio
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, EMBEDCOLOR, BOT_ACTIVITY_TYPE, BOT_ACTIVITY_NAME
+from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, EMBEDCOLOR, BOT_ACTIVITY_TYPE, BOT_ACTIVITY_NAME, PLAYLIST_SONG_COUNT
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
@@ -15,7 +15,6 @@ queue = []
 
 command_prefix = bot.command_prefix
 bot.remove_command('help')
-
 
 @bot.event
 async def on_ready():
@@ -45,22 +44,22 @@ async def play_music(ctx, *, query):
         channel = ctx.author.voice.channel
     except AttributeError:
         await ctx.send(embed=discord.Embed(
-        title="",
-        description=f"You need to be in a voice channel to use this command.",
-        color=discord.Colour(int(EMBEDCOLOR, 16))
+            title="",
+            description=f"You need to be in a voice channel to use this command.",
+            color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
         return
 
-    # Check if the bot is already in a vc in the same server
+    # check if the bot is already in a vc in the same server
     voice_channel = discord.utils.get(bot.voice_clients, guild=ctx.guild)
 
-    # If the bot is already in a vc, disconnect and join ur channel (will change this in the future)
+    # if the bot is already in a vc, disconnect and join ur channel (will change this in the future)
     if voice_channel:
         if voice_channel.channel != channel:
             await ctx.send(embed=discord.Embed(
-            title="",
-            description=f"Bot is already in another voice channel.",
-            color=discord.Colour(int(EMBEDCOLOR, 16))
+                title="",
+                description=f"Bot is already in another voice channel.",
+                color=discord.Colour(int(EMBEDCOLOR, 16))
             ))
             return
     else:
@@ -69,46 +68,81 @@ async def play_music(ctx, *, query):
 
     if 'youtu.be' in query:
         video_id = query.split('/')[-1].split('?')[0]
+        url = f'https://www.youtube.com/watch?v={video_id}'
+        await process_single_song(ctx, voice_channel, video_id, url)
+    elif 'youtube.com/playlist?' in query:
+        playlist_id = query.split('=')[1].split('&')[0]
+        url = f'https://www.youtube.com/playlist?list={playlist_id}'
+        playlist_songs = get_playlist_songs(playlist_id)
+        if not playlist_songs:
+            await ctx.send(embed=discord.Embed(
+                title="",
+                description=f"Failed to fetch playlist songs.",
+                color=discord.Colour(int(EMBEDCOLOR, 16))
+            ))
+            return
+        await process_playlist(ctx, voice_channel, playlist_songs)
     else:
+        # Extract base URL
+        if '&' in query:
+            query = query.split('&')[0]
         video_id = search_youtube(query)
+        if not video_id:
+            await ctx.send(embed=discord.Embed(
+                title="",
+                description=f"No results found for the given query.",
+                color=discord.Colour(int(EMBEDCOLOR, 16))
+            ))
+            return
+        url = f'https://www.youtube.com/watch?v={video_id}'
+        await process_single_song(ctx, voice_channel, video_id, url)
 
-    if not video_id:
-        await ctx.send(embed=discord.Embed(
-        title="",
-        description=f"No results found for the given query.",
-        color=discord.Colour(int(EMBEDCOLOR, 16))
-        ))
-        return
-
-    url = f'https://www.youtube.com/watch?v={video_id}'
-
+async def process_single_song(ctx, voice_channel, video_id, url):
     await ctx.send(embed=discord.Embed(
         title="",
         description=f"Added to queue: **{get_video_title(video_id)}**",
         color=discord.Colour(int(EMBEDCOLOR, 16))
     ))
 
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
-
-    async def download_song():
-        nonlocal url
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=False)
-            url = info_dict.get('url', '')
-
-    await asyncio.gather(download_song())
-
     queue.append({
         'url': url,
         'title': get_video_title(video_id)
     })
+
+    if not voice_channel.is_playing():
+        await play_next_in_queue(voice_channel)
+
+def get_playlist_songs(playlist_id):
+    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+    songs = []
+
+    try:
+        request = youtube.playlistItems().list(part='snippet', playlistId=playlist_id, maxResults=50)
+        response = request.execute()
+        for item in response['items']:
+            video_id = item['snippet']['resourceId']['videoId']
+            title = item['snippet']['title']
+            url = f'https://www.youtube.com/watch?v={video_id}'
+            songs.append({'video_id': video_id, 'url': url, 'title': title})
+        return songs
+    except HttpError as e:
+        print(f'An error occurred: {e}')
+        return None
+    
+async def process_playlist(ctx, voice_channel, playlist_songs, max_songs=PLAYLIST_SONG_COUNT):
+    max_songs = int(max_songs) if max_songs is not None else None
+    num_songs = min(len(playlist_songs), max_songs) if max_songs else len(playlist_songs)
+    await ctx.send(embed=discord.Embed(
+        title="",
+        description=f"{num_songs} songs added to the queue from the playlist!",
+        color=discord.Colour(int(EMBEDCOLOR, 16))
+    ))
+
+    for song in playlist_songs:
+        queue.append({
+            'url': song['url'],
+            'title': song['title']
+        })
 
     if not voice_channel.is_playing():
         await play_next_in_queue(voice_channel)
@@ -225,17 +259,35 @@ async def stop_music(message):
     queue.clear()
     await voice_channel.disconnect()
     
-    
 async def play_next_in_queue(voice_channel):
-    
     if queue:
         next_song = queue[0]
 
         if not voice_channel.is_playing():
-            queue.pop(0)
-            voice_channel.play(discord.FFmpegPCMAudio(next_song['url'], before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", options="-vn"), after=lambda e: asyncio.run_coroutine_threadsafe(play_next_in_queue(voice_channel), bot.loop))
+            song_url = next_song['url']
+
+            ydl_opts = {
+                'format': 'bestaudio/best',
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                }],
+            }
+
+            async def download_song():
+                nonlocal song_url
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    info_dict = ydl.extract_info(song_url, download=False)
+                    song_url = info_dict.get('url', '')
+
+            await asyncio.gather(download_song())
+
+            voice_channel.play(discord.FFmpegPCMAudio(song_url, before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", options="-vn"), after=lambda e: asyncio.run_coroutine_threadsafe(play_next_in_queue(voice_channel), bot.loop))
 
             await voice_channel.guild.get_channel(voice_channel.channel.id).send(f'Now playing: {next_song["title"]}')
+
+        queue.pop(0)
 
 def get_video_title(video_id):
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
@@ -289,6 +341,7 @@ class CategorySelect(discord.ui.Select):
                 title="Music Commands",
                 color=discord.Colour(int(EMBEDCOLOR, 16))
             )
+
             embed.add_field(name="!play [query]", value="Play a song from YouTube.", inline=False)
             embed.add_field(name="!queuelist", value="Display the current queue.", inline=False)
             embed.add_field(name="!clearqueue", value="Clear the current queue.", inline=False)
