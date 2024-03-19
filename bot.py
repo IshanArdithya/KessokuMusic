@@ -49,6 +49,15 @@ async def play_music(ctx, *, query):
             color=discord.Colour(int(EMBEDCOLOR, 16))
         ))
         return
+    
+    # used to check if the bot can join the voice channel
+    if not channel.permissions_for(ctx.guild.me).connect:
+        await ctx.send(embed=discord.Embed(
+            title="",
+            description=f"The bot can't join the voice channel.",
+            color=discord.Colour(int(EMBEDCOLOR, 16))
+        ))
+        return
 
     # check if the bot is already in a vc in the same server
     voice_channel = discord.utils.get(bot.voice_clients, guild=ctx.guild)
@@ -289,6 +298,10 @@ async def play_next_in_queue(voice_channel):
 
         queue.pop(0)
 
+    else:
+        # If queue is empty, disconnect from voice channel
+        await voice_channel.disconnect()
+
 def get_video_title(video_id):
     youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
@@ -342,14 +355,14 @@ class CategorySelect(discord.ui.Select):
                 color=discord.Colour(int(EMBEDCOLOR, 16))
             )
 
-            embed.add_field(name="!play [query]", value="Play a song from YouTube.", inline=False)
-            embed.add_field(name="!queuelist", value="Display the current queue.", inline=False)
-            embed.add_field(name="!clearqueue", value="Clear the current queue.", inline=False)
-            embed.add_field(name="!skip", value="Skip the currently playing song.", inline=False)
-            embed.add_field(name="!pause", value="Pause the currently playing song.", inline=False)
-            embed.add_field(name="!resume", value="Resume the currently paused song.", inline=False)
-            embed.add_field(name="!stop", value="Stop the player and clear the queue.", inline=False)
-            embed.add_field(name="!shuffle", value="Shuffle the current queue.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}play [song/link] | {BOT_PREFIX}p [song/link]", value="Play a song from YouTube.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}queuelist |  {BOT_PREFIX}qlist", value="Display the current queue.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}clearqueue | {BOT_PREFIX}clearq", value="Clear the current queue.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}skip", value="Skip the currently playing song.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}pause", value="Pause the currently playing song.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}resume", value="Resume the currently paused song.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}stop", value="Stop the player and clear the queue.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}shuffle", value="Shuffle the current queue.", inline=False)
             await interaction.response.send_message(embed=embed)
 
 bot.run(BOT_TOKEN)
