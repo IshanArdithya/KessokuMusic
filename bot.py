@@ -4,9 +4,10 @@ from discord.ext import commands
 from discord import Activity, ActivityType
 import yt_dlp as youtube_dl
 import asyncio
+import datetime
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, EMBEDCOLOR, BOT_ACTIVITY_TYPE, BOT_ACTIVITY_NAME, PLAYLIST_SONG_COUNT
+from config import BOT_TOKEN, YOUTUBE_API_KEY, BOT_PREFIX, OWNER_ID,  EMBEDCOLOR, BOT_ACTIVITY_TYPE, BOT_ACTIVITY_NAME, PLAYLIST_SONG_COUNT
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
@@ -16,8 +17,12 @@ queue = []
 command_prefix = bot.command_prefix
 bot.remove_command('help')
 
+start_time = None
+
 @bot.event
 async def on_ready():
+    global start_time
+    start_time = datetime.datetime.now()
     activity_type_mapping = {
         '0': None,
         '1': ActivityType.playing,
@@ -72,7 +77,7 @@ async def play_music(ctx, *, query):
             ))
             return
     else:
-        # If the bot is not in any vc, connect to the requested vc
+        # if the bot is not in any vc, connect to the requested vc
         voice_channel = await channel.connect()
 
     if 'youtu.be' in query:
@@ -299,7 +304,6 @@ async def play_next_in_queue(voice_channel):
         queue.pop(0)
 
     else:
-        # If queue is empty, disconnect from voice channel
         await voice_channel.disconnect()
 
 def get_video_title(video_id):
@@ -331,20 +335,28 @@ async def shuffle_queue(message):
 
 @bot.command(name='help')
 async def help(ctx):
-    view = HelpView()
+    BOT_OWNER_ID = int(OWNER_ID)
+    is_owner = ctx.author.id == BOT_OWNER_ID
+    # print(f"Author ID: {ctx.author.id}, Owner ID: {BOT_OWNER_ID}, Is Owner: {is_owner}") # debugging
+
+    view = HelpView(is_owner)
     await ctx.send("Here are the commands:", view=view)
 
 class HelpView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, is_owner):
         super().__init__()
 
-        self.add_item(CategorySelect())
+        self.is_owner = is_owner
+        self.add_item(CategorySelect(is_owner))
 
 class CategorySelect(discord.ui.Select):
-    def __init__(self):
+    def __init__(self, is_owner):
+        self.is_owner = is_owner
         options = [
             discord.SelectOption(label="Music", value="music", description="Music commands"),
         ]
+        if is_owner:
+            options.append(discord.SelectOption(label="Stats", value="stats", description="Server Stats"))
         super().__init__(placeholder="Select a category", options=options)
 
     async def callback(self, interaction: discord.Interaction):
@@ -363,6 +375,25 @@ class CategorySelect(discord.ui.Select):
             embed.add_field(name=f"{BOT_PREFIX}resume", value="Resume the currently paused song.", inline=False)
             embed.add_field(name=f"{BOT_PREFIX}stop", value="Stop the player and clear the queue.", inline=False)
             embed.add_field(name=f"{BOT_PREFIX}shuffle", value="Shuffle the current queue.", inline=False)
+            await interaction.response.send_message(embed=embed)
+
+        elif selected_category == "stats" and self.is_owner:
+            guild_count = len(bot.guilds)
+            voice_servers = len(set(voice_channel.guild for voice_channel in bot.voice_clients))
+
+            # calc bot uptime
+            uptime = datetime.datetime.now() - start_time
+            days = uptime.days
+            hours, remainder = divmod(uptime.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            
+            embed = discord.Embed(
+                title="Bot Stats",
+                color=discord.Colour(int(EMBEDCOLOR, 16))
+            )
+            embed.add_field(name="Total Servers", value=guild_count, inline=False)
+            embed.add_field(name="Currently Playing In Servers", value=voice_servers, inline=False)
+            embed.add_field(name="Online Since", value=f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds", inline=False)
             await interaction.response.send_message(embed=embed)
 
 bot.run(BOT_TOKEN)
