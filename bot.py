@@ -367,9 +367,9 @@ class CategorySelect(discord.ui.Select):
                 color=discord.Colour(int(EMBEDCOLOR, 16))
             )
 
-            embed.add_field(name=f"{BOT_PREFIX}play [song/link] | {BOT_PREFIX}p [song/link]", value="Play a song from YouTube.", inline=False)
-            embed.add_field(name=f"{BOT_PREFIX}queuelist |  {BOT_PREFIX}qlist", value="Display the current queue.", inline=False)
-            embed.add_field(name=f"{BOT_PREFIX}clearqueue | {BOT_PREFIX}clearq", value="Clear the current queue.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}play [song/link] || {BOT_PREFIX}p [song/link]", value="Play a song from YouTube.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}queuelist ||  {BOT_PREFIX}qlist", value="Display the current queue.", inline=False)
+            embed.add_field(name=f"{BOT_PREFIX}clearqueue || {BOT_PREFIX}clearq", value="Clear the current queue.", inline=False)
             embed.add_field(name=f"{BOT_PREFIX}skip", value="Skip the currently playing song.", inline=False)
             embed.add_field(name=f"{BOT_PREFIX}pause", value="Pause the currently playing song.", inline=False)
             embed.add_field(name=f"{BOT_PREFIX}resume", value="Resume the currently paused song.", inline=False)
