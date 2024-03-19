@@ -396,4 +396,6 @@ class CategorySelect(discord.ui.Select):
             embed.add_field(name="Online Since", value=f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds", inline=False)
             await interaction.response.send_message(embed=embed)
 
+        await interaction.message.delete()
+
 bot.run(BOT_TOKEN)
